@@ -6,19 +6,26 @@ function Books() {
     const [books, setBooks] = useState([]);
 
     function handleSubmit(event) {
-    event.preventDefault();
+        event.preventDefault();
 
-    fetch("/api/books", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            title: title,
-            author: author
-        })
-    });
-}
+        fetch("/api/books", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: title,
+                author: author
+            })
+        });
+    }
+    async function handleViewBooks() {
+        const response = await fetch("/api/books");
+        const data = await response.json();
+
+        console.log(data);
+        setBooks(data);
+    }
 
     return (
         <section>
@@ -54,9 +61,19 @@ function Books() {
                 </button>
             </form>
 
-            <button type="button">
+            <button onClick={handleViewBooks}>
                 View My Books
             </button>
+            <div>
+                {books.map((book) => (
+                    <li key={book.id}>
+                        {book.title} by {book.author}
+                    </li>
+                ))}
+            </div>
+
+
+
         </section>
     );
 }

@@ -18,8 +18,12 @@ const pool = new Pool({
 app.use(express.static("public"));
 app.use(express.json());
 
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/public/index.html");
+app.get("/api/books", async (req, res) => {
+    const result = await pool.query(
+        "SELECT * FROM books"
+    );
+
+    res.json(result.rows);
 });
 
 app.get("/api/books", (req, res) => {
