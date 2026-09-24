@@ -5,13 +5,28 @@ function Books() {
     const [author, setAuthor] = useState("");
     const [books, setBooks] = useState([]);
 
+    function handleSubmit(event) {
+    event.preventDefault();
+
+    fetch("/api/books", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            title: title,
+            author: author
+        })
+    });
+}
+
     return (
         <section>
             <h2>My Books</h2>
 
             <p>Books in my library.</p>
 
-            <form>
+            <form onSubmit={handleSubmit}>
                 <label htmlFor="bookTitle">
                     Book Title
                 </label>
@@ -39,7 +54,7 @@ function Books() {
                 </button>
             </form>
 
-            <button>
+            <button type="button">
                 View My Books
             </button>
         </section>
