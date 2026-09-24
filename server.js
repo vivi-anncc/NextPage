@@ -26,23 +26,6 @@ app.get("/api/books", async (req, res) => {
     res.json(result.rows);
 });
 
-app.get("/api/books", (req, res) => {
-    console.log("Books API was called");
-    res.json([
-        {
-            title: "Test 1",
-            author: "Test"
-        },
-        {
-            title: "Test 2",
-            author: "Test"
-        },
-        {
-            title: "Test 3",
-            author: "Test"
-        }
-    ]);
-});
 
 app.post("/api/books", async (req, res) => {
     const { title, author } = req.body;
@@ -64,6 +47,19 @@ app.post("/api/books", async (req, res) => {
     }
 });
 
+app.put("/api/books/:id", async (req, res) => {
+     const { id } = req.params; 
+     const { title, author } = req.body; 
+     const result = await pool.query(
+         "UPDATE books SET title = $1, author = $2 WHERE id = $3 RETURNING *", [title, author, id] ); res.json(result.rows[0]); });
+
+app.delete("/api/books/:id", async (req, res) => { 
+    const { id } = req.params; 
+    await pool.query( "DELETE FROM books WHERE id = $1", [id] ); res.sendStatus(204); });
+
+
+
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
+

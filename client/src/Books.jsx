@@ -1,30 +1,86 @@
+
 import { useState } from "react";
 
 function Books() {
     const [title, setTitle] = useState("");
     const [author, setAuthor] = useState("");
     const [books, setBooks] = useState([]);
+    const [editingBookId, setEditingBookId] = useState(null);
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault();
 
-        fetch("/api/books", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                title: title,
-                author: author
-            })
-        });
-    }
-    async function handleViewBooks() {
-        const response = await fetch("/api/books");
-        const data = await response.json();
+        if (editingBookId !== null) {
+            const response = await fetch(`/api/books/${editingBookId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title,
+                    author: author
+                })
+            });
 
-        console.log(data);
-        setBooks(data);
+            const updatedBook = await response.json();
+
+            setBooks((currentBooks) =>
+                currentBooks.map((book) =>
+                    book.id === editingBookId ? updatedBook : book
+                )
+            );
+
+            setEditingBookId(null);
+        } else {
+            const response = await fetch("/api/books", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title,
+                    author: author
+                })
+            });
+
+            const newBook = await response.json();
+
+            setBooks((currentBooks) => [...currentBooks, newBook]);
+        }
+
+        setTitle("");
+        setAuthor("");
+    }
+
+    async function handleViewBooks() {
+    const response = await fetch("/api/books");
+    const data = await response.json();
+
+    console.log("Books:", data);
+
+    setBooks(data);
+}
+
+    function handleEdit(book) {
+        setTitle(book.title);
+        setAuthor(book.author);
+        setEditingBookId(book.id);
+    }
+
+    async function handleDelete(bookId) {
+        await fetch(`/api/books/${bookId}`, {
+            method: "DELETE"
+        });
+
+        setBooks((currentBooks) =>
+            currentBooks.filter((book) => book.id !== bookId)
+        );
+
+        if (editingBookId === bookId) {
+            setEditingBookId(null);
+            setTitle("");
+            setAuthor("");
+        }
     }
 
     return (
@@ -57,25 +113,34 @@ function Books() {
                 />
 
                 <button type="submit">
-                    Add Book
+                    {editingBookId !== null ? "Update Book" : "Add Book"}
                 </button>
             </form>
 
             <button onClick={handleViewBooks}>
                 View My Books
             </button>
+
             <div>
                 {books.map((book) => (
-                    <li key={book.id}>
-                        {book.title} by {book.author}
-                    </li>
+                    <div key={book.id}>
+                        <p>
+                            {book.title} by {book.author}
+                        </p>
+
+                        <button onClick={() => handleEdit(book)}>
+                            Edit
+                        </button>
+
+                        <button onClick={() => handleDelete(book.id)}>
+                            Delete
+                        </button>
+                    </div>
                 ))}
             </div>
-
-
-
         </section>
     );
 }
 
 export default Books;
+
