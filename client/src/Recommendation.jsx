@@ -8,118 +8,138 @@ function Recommendation() {
     async function handleSubmit(event) {
         event.preventDefault();
 
-        const response = await fetch("/api/recommendations", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                genre: genre,
-                author: author
-            })
-        });
+        const params = new URLSearchParams();
+
+        if (genre) {
+            params.append("genre", genre);
+        }
+
+        if (author) {
+            params.append("author", author);
+        }
+
+        const response = await fetch(
+            `/api/recommendations?${params.toString()}`
+        );
 
         const data = await response.json();
 
         if (data.length > 0) {
-            setRecommendation(data[0]);
+            const randomIndex = Math.floor(
+                Math.random() * data.length
+            );
+
+            setRecommendation(data[randomIndex]);
         } else {
             setRecommendation(null);
         }
     }
 
     return (
-        <section>
-            <h2>Find a Book</h2>
+        <main className="page recommendation-page">
+            <div className="recommendation-container">
 
-            <p>
-                Choose a genre, enter an author, or choose both.
-            </p>
-
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="genre">
-                    Genre
-                </label>
-
-                <select
-                    id="genre"
-                    value={genre}
-                    onChange={(event) => setGenre(event.target.value)}
-                >
-                    <option value="">
-                        Any genre
-                    </option>
-
-                    <option value="Fantasy">
-                        Fantasy
-                    </option>
-
-                    <option value="Science Fiction">
-                        Science Fiction
-                    </option>
-
-                    <option value="Mystery">
-                        Mystery
-                    </option>
-
-                    <option value="Romance">
-                        Romance
-                    </option>
-
-                    <option value="Adventure">
-                        Adventure
-                    </option>
-
-                    <option value="Horror">
-                        Horror
-                    </option>
-
-                    <option value="Slice of Life">
-                        Slice of Life
-                    </option>
-                </select>
-
-                <label htmlFor="author">
-                    Author
-                </label>
-
-                <input
-                    type="text"
-                    id="author"
-                    value={author}
-                    onChange={(event) => setAuthor(event.target.value)}
-                    placeholder="Enter an author"
-                />
-
-                <button type="submit">
-                    Get Recommendation
-                </button>
-            </form>
-
-            {recommendation && (
-                <div>
-                    <h3>We Recommend:</h3>
+                <div className="page-header">
+                    <h1>Find Your Next Book</h1>
 
                     <p>
-                        {recommendation.title}
-                    </p>
-
-                    <p>
-                        By {recommendation.author}
-                    </p>
-
-                    <p>
-                        Genre: {recommendation.genre}
+                        Choose a genre, enter an author, or choose both.
                     </p>
                 </div>
-            )}
 
-            {!recommendation && (
-                <p>
-                    No matching books found.
-                </p>
-            )}
-        </section>
+                <form
+                    className="recommendation-form"
+                    onSubmit={handleSubmit}
+                >
+                    <label htmlFor="genre">
+                        Genre
+                    </label>
+
+                    <select
+                        id="genre"
+                        value={genre}
+                        onChange={(event) =>
+                            setGenre(event.target.value)
+                        }
+                    >
+                        <option value="">
+                            Any genre
+                        </option>
+
+                        <option value="Fantasy">
+                            Fantasy
+                        </option>
+
+                        <option value="Science Fiction">
+                            Science Fiction
+                        </option>
+
+                        <option value="Mystery">
+                            Mystery
+                        </option>
+
+                        <option value="Romance">
+                            Romance
+                        </option>
+
+                        <option value="Adventure">
+                            Adventure
+                        </option>
+
+                        <option value="Horror">
+                            Horror
+                        </option>
+
+                        <option value="Slice of Life">
+                            Slice of Life
+                        </option>
+                    </select>
+
+                    <label htmlFor="author">
+                        Author
+                    </label>
+
+                    <input
+                        type="text"
+                        id="author"
+                        value={author}
+                        onChange={(event) =>
+                            setAuthor(event.target.value)
+                        }
+                        placeholder="Enter an author"
+                    />
+
+                    <button type="submit">
+                        Get Recommendation
+                    </button>
+                </form>
+
+                {recommendation ? (
+                    <div className="recommendation-result">
+                        <h2>
+                            We Recommend
+                        </h2>
+
+                        <h3>
+                            {recommendation.title}
+                        </h3>
+
+                        <p>
+                            By {recommendation.author}
+                        </p>
+
+                        <p>
+                            Genre: {recommendation.genre}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="no-recommendation">
+                        No matching books found.
+                    </div>
+                )}
+
+            </div>
+        </main>
     );
 }
 

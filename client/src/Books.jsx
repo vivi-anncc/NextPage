@@ -11,23 +11,28 @@ function Books() {
         event.preventDefault();
 
         if (editingBookId !== null) {
-            const response = await fetch(`/api/books/${editingBookId}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    title: title,
-                    author: author,
-                    genre: genre
-                })
-            });
+            const response = await fetch(
+                `/api/books/${editingBookId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        author: author,
+                        genre: genre
+                    })
+                }
+            );
 
             const updatedBook = await response.json();
 
             setBooks((currentBooks) =>
                 currentBooks.map((book) =>
-                    book.id === editingBookId ? updatedBook : book
+                    book.id === editingBookId
+                        ? updatedBook
+                        : book
                 )
             );
 
@@ -47,7 +52,10 @@ function Books() {
 
             const newBook = await response.json();
 
-            setBooks((currentBooks) => [...currentBooks, newBook]);
+            setBooks((currentBooks) => [
+                ...currentBooks,
+                newBook
+            ]);
         }
 
         setTitle("");
@@ -87,76 +95,162 @@ function Books() {
     }
 
     return (
-        <section>
-            <h2>My Books</h2>
+        <main className="page">
+            <div className="page-container">
 
-            <p>Books in my library.</p>
+                <div className="page-header">
+                    <h1>My Books</h1>
 
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="bookTitle">
-                    Book Title
-                </label>
+                    <p>
+                        Keep track of the books in your collection.
+                    </p>
+                </div>
 
-                <input
-                    type="text"
-                    id="bookTitle"
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
-                />
+                <form
+                    className="book-form"
+                    onSubmit={handleSubmit}
+                >
+                    <label htmlFor="title">
+                        Title
+                    </label>
 
-                <label htmlFor="bookAuthor">
-                    Author
-                </label>
+                    <input
+                        type="text"
+                        id="title"
+                        value={title}
+                        onChange={(event) =>
+                            setTitle(event.target.value)
+                        }
+                        placeholder="Enter book title"
+                        required
+                    />
 
-                <input
-                    type="text"
-                    id="bookAuthor"
-                    value={author}
-                    onChange={(event) => setAuthor(event.target.value)}
-                />
+                    <label htmlFor="author">
+                        Author
+                    </label>
 
-                <label htmlFor="bookGenre">
-                    Genre
-                </label>
+                    <input
+                        type="text"
+                        id="author"
+                        value={author}
+                        onChange={(event) =>
+                            setAuthor(event.target.value)
+                        }
+                        placeholder="Enter author"
+                        required
+                    />
 
-                <input
-                    type="text"
-                    id="bookGenre"
-                    value={genre}
-                    onChange={(event) => setGenre(event.target.value)}
-                />
+                    <label htmlFor="genre">
+                        Genre
+                    </label>
 
-                <button type="submit">
-                    {editingBookId !== null ? "Update Book" : "Add Book"}
+                    <select
+                        id="genre"
+                        value={genre}
+                        onChange={(event) =>
+                            setGenre(event.target.value)
+                        }
+                        required
+                    >
+                        <option value="">
+                            Select a genre
+                        </option>
+
+                        <option value="Fantasy">
+                            Fantasy
+                        </option>
+
+                        <option value="Science Fiction">
+                            Science Fiction
+                        </option>
+
+                        <option value="Mystery">
+                            Mystery
+                        </option>
+
+                        <option value="Romance">
+                            Romance
+                        </option>
+
+                        <option value="Adventure">
+                            Adventure
+                        </option>
+
+                        <option value="Horror">
+                            Horror
+                        </option>
+
+                        <option value="Slice of Life">
+                            Slice of Life
+                        </option>
+                    </select>
+
+                    <button type="submit">
+                        {editingBookId !== null
+                            ? "Update Book"
+                            : "Add Book"}
+                    </button>
+
+                    {editingBookId !== null && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setEditingBookId(null);
+                                setTitle("");
+                                setAuthor("");
+                                setGenre("");
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    )}
+                </form>
+
+                <button onClick={handleViewBooks}>
+                    View My Books
                 </button>
-            </form>
 
-            <button onClick={handleViewBooks}>
-                View My Books
-            </button>
+                <div className="books-list">
+                    {books.map((book) => (
+                        <div
+                            className="book-card"
+                            key={book.id}
+                        >
+                            <h3>
+                                {book.title}
+                            </h3>
 
-            <div>
-                {books.map((book) => (
-                    <div key={book.id}>
-                        <p>
-                            {book.title} by {book.author}
-                        </p>
+                            <p>
+                                By {book.author}
+                            </p>
 
-                        <p>
-                            Genre: {book.genre}
-                        </p>
+                            <p>
+                                Genre: {book.genre}
+                            </p>
 
-                        <button onClick={() => handleEdit(book)}>
-                            Edit
-                        </button>
+                            <div className="book-actions">
+                                <button
+                                    onClick={() =>
+                                        handleEdit(book)
+                                    }
+                                >
+                                    Edit
+                                </button>
 
-                        <button onClick={() => handleDelete(book.id)}>
-                            Delete
-                        </button>
-                    </div>
-                ))}
+                                <button
+                                    onClick={() =>
+                                        handleDelete(book.id)
+                                    }
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
             </div>
-        </section>
+        </main>
     );
 }
 
