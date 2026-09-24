@@ -91,7 +91,39 @@ app.delete("/api/books/:id", async (req, res) => {
         });
     }
 });
+app.post("/api/recommendations", async (req, res) => {
+    const { genre, author } = req.body;
 
+    try {
+        let query = "SELECT * FROM recommendations";
+        let values = [];
+        let conditions = [];
+
+        if (genre) {
+            conditions.push(`genre = $${values.length + 1}`);
+            values.push(genre);
+        }
+
+        if (author) {
+            conditions.push(`author = $${values.length + 1}`);
+            values.push(author);
+        }
+
+        if (conditions.length > 0) {
+            query += " WHERE " + conditions.join(" AND ");
+        }
+
+        const result = await pool.query(query, values);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error getting recommendations:", error);
+
+        res.status(500).json({
+            error: "Failed to get recommendations"
+        });
+    }
+});
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
