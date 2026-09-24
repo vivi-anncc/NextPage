@@ -40,11 +40,24 @@ app.get("/api/books", (req, res) => {
     ]);
 });
 
-app.post("/api/books", (req, res) => {
-    console.log("POST /api/books");
-    console.log(req.body);
+app.post("/api/books", async (req, res) => {
+    const { title, author } = req.body;
 
-    res.status(201).json(req.body);
+    try {
+        const result = await pool.query(
+            "INSERT INTO books (title, author) VALUES ($1, $2) RETURNING *",
+            [title, author]
+        );
+
+        res.status(201).json(result.rows[0]);
+
+    } catch (error) {
+        console.error("Error adding book:", error);
+
+        res.status(500).json({
+            error: "Failed to add book"
+        });
+    }
 });
 
 app.listen(PORT, () => {
