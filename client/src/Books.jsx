@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 
 function Books() {
     const [title, setTitle] = useState("");
     const [author, setAuthor] = useState("");
+    const [genre, setGenre] = useState("");
     const [books, setBooks] = useState([]);
     const [editingBookId, setEditingBookId] = useState(null);
 
@@ -18,7 +18,8 @@ function Books() {
                 },
                 body: JSON.stringify({
                     title: title,
-                    author: author
+                    author: author,
+                    genre: genre
                 })
             });
 
@@ -39,7 +40,8 @@ function Books() {
                 },
                 body: JSON.stringify({
                     title: title,
-                    author: author
+                    author: author,
+                    genre: genre
                 })
             });
 
@@ -50,20 +52,20 @@ function Books() {
 
         setTitle("");
         setAuthor("");
+        setGenre("");
     }
 
     async function handleViewBooks() {
-    const response = await fetch("/api/books");
-    const data = await response.json();
+        const response = await fetch("/api/books");
+        const data = await response.json();
 
-    console.log("Books:", data);
-
-    setBooks(data);
-}
+        setBooks(data);
+    }
 
     function handleEdit(book) {
         setTitle(book.title);
         setAuthor(book.author);
+        setGenre(book.genre);
         setEditingBookId(book.id);
     }
 
@@ -80,6 +82,7 @@ function Books() {
             setEditingBookId(null);
             setTitle("");
             setAuthor("");
+            setGenre("");
         }
     }
 
@@ -112,6 +115,17 @@ function Books() {
                     onChange={(event) => setAuthor(event.target.value)}
                 />
 
+                <label htmlFor="bookGenre">
+                    Genre
+                </label>
+
+                <input
+                    type="text"
+                    id="bookGenre"
+                    value={genre}
+                    onChange={(event) => setGenre(event.target.value)}
+                />
+
                 <button type="submit">
                     {editingBookId !== null ? "Update Book" : "Add Book"}
                 </button>
@@ -126,6 +140,10 @@ function Books() {
                     <div key={book.id}>
                         <p>
                             {book.title} by {book.author}
+                        </p>
+
+                        <p>
+                            Genre: {book.genre}
                         </p>
 
                         <button onClick={() => handleEdit(book)}>
@@ -143,4 +161,3 @@ function Books() {
 }
 
 export default Books;
-
