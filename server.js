@@ -18,6 +18,9 @@ const pool = new Pool({
 app.use(express.static("public"));
 app.use(express.json());
 
+
+// BOOKS
+
 app.get("/api/books", async (req, res) => {
     try {
         const result = await pool.query(
@@ -26,7 +29,10 @@ app.get("/api/books", async (req, res) => {
 
         res.json(result.rows);
     } catch (error) {
-        console.error("Error getting books:", error);
+        console.error(
+            "Error getting books:",
+            error
+        );
 
         res.status(500).json({
             error: "Failed to get books"
@@ -34,18 +40,24 @@ app.get("/api/books", async (req, res) => {
     }
 });
 
+
 app.post("/api/books", async (req, res) => {
     const { title, author, genre } = req.body;
 
     try {
         const result = await pool.query(
-            "INSERT INTO books (title, author, genre) VALUES ($1, $2, $3) RETURNING *",
+            `INSERT INTO books (title, author, genre)
+             VALUES ($1, $2, $3)
+             RETURNING *`,
             [title, author, genre]
         );
 
         res.status(201).json(result.rows[0]);
     } catch (error) {
-        console.error("Error adding book:", error);
+        console.error(
+            "Error adding book:",
+            error
+        );
 
         res.status(500).json({
             error: "Failed to add book"
@@ -53,19 +65,34 @@ app.post("/api/books", async (req, res) => {
     }
 });
 
+
 app.put("/api/books/:id", async (req, res) => {
     const { id } = req.params;
     const { title, author, genre } = req.body;
 
     try {
         const result = await pool.query(
-            "UPDATE books SET title = $1, author = $2, genre = $3 WHERE id = $4 RETURNING *",
+            `UPDATE books
+             SET title = $1,
+                 author = $2,
+                 genre = $3
+             WHERE id = $4
+             RETURNING *`,
             [title, author, genre, id]
         );
 
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Book not found"
+            });
+        }
+
         res.json(result.rows[0]);
     } catch (error) {
-        console.error("Error updating book:", error);
+        console.error(
+            "Error updating book:",
+            error
+        );
 
         res.status(500).json({
             error: "Failed to update book"
@@ -73,57 +100,98 @@ app.put("/api/books/:id", async (req, res) => {
     }
 });
 
+
 app.delete("/api/books/:id", async (req, res) => {
     const { id } = req.params;
 
     try {
-        await pool.query(
-            "DELETE FROM books WHERE id = $1",
+        const result = await pool.query(
+            `DELETE FROM books
+             WHERE id = $1
+             RETURNING *`,
             [id]
         );
 
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Book not found"
+            });
+        }
+
         res.sendStatus(204);
     } catch (error) {
-        console.error("Error deleting book:", error);
+        console.error(
+            "Error deleting book:",
+            error
+        );
 
         res.status(500).json({
             error: "Failed to delete book"
         });
     }
 });
-app.post("/api/recommendations", async (req, res) => {
-    const { genre, author } = req.body;
+
+
+// RECOMMENDATIONS
+
+app.get("/api/recommendations", async (req, res) => {
+    const { genre, author } = req.query;
+
+    console.log(
+        "Recommendation request:",
+        { genre, author }
+    );
 
     try {
-        let query = "SELECT * FROM recommendations";
-        let values = [];
-        let conditions = [];
+        let query =
+            "SELECT * FROM recommendations WHERE 1=1";
+
+        const values = [];
 
         if (genre) {
-            conditions.push(`genre = $${values.length + 1}`);
             values.push(genre);
+
+            query += ` AND genre = $${values.length}`;
         }
 
         if (author) {
-            conditions.push(`author = $${values.length + 1}`);
-            values.push(author);
+            values.push(`%${author}%`);
+
+            query += ` AND author ILIKE $${values.length}`;
         }
 
-        if (conditions.length > 0) {
-            query += " WHERE " + conditions.join(" AND ");
-        }
+        query += " ORDER BY RANDOM()";
 
-        const result = await pool.query(query, values);
+        console.log("SQL:", query);
+        console.log("Values:", values);
+
+        const result = await pool.query(
+            query,
+            values
+        );
+
+        console.log(
+            "Recommendations found:",
+            result.rows.length
+        );
 
         res.json(result.rows);
     } catch (error) {
-        console.error("Error getting recommendations:", error);
+        console.error(
+            "Error getting recommendations:",
+            error
+        );
 
         res.status(500).json({
             error: "Failed to get recommendations"
         });
     }
 });
+
+
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+    console.log(
+        `Server running at http://localhost:${PORT}`
+    );
 });
+

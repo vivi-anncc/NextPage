@@ -1,37 +1,65 @@
+
 import { useState } from "react";
 
 function Recommendation() {
     const [genre, setGenre] = useState("");
     const [author, setAuthor] = useState("");
     const [recommendation, setRecommendation] = useState(null);
+    const [hasSearched, setHasSearched] = useState(false);
+    const [error, setError] = useState("");
 
     async function handleSubmit(event) {
         event.preventDefault();
 
-        const params = new URLSearchParams();
+        setHasSearched(true);
+        setRecommendation(null);
+        setError("");
 
-        if (genre) {
-            params.append("genre", genre);
+        if (!genre && !author.trim()) {
+            setError(
+                "Please select a genre or enter an author."
+            );
+            return;
         }
 
-        if (author) {
-            params.append("author", author);
-        }
+        try {
+            const params = new URLSearchParams();
 
-        const response = await fetch(
-            `/api/recommendations?${params.toString()}`
-        );
+            if (genre) {
+                params.append("genre", genre);
+            }
 
-        const data = await response.json();
+            if (author.trim()) {
+                params.append("author", author.trim());
+            }
 
-        if (data.length > 0) {
-            const randomIndex = Math.floor(
-                Math.random() * data.length
+            const response = await fetch(
+                `/api/recommendations?${params.toString()}`
             );
 
-            setRecommendation(data[randomIndex]);
-        } else {
-            setRecommendation(null);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error ||
+                    "Failed to get recommendations."
+                );
+            }
+
+            if (data.length > 0) {
+                setRecommendation(data[0]);
+            } else {
+                setRecommendation(null);
+            }
+        } catch (error) {
+            console.error(
+                "Recommendation error:",
+                error
+            );
+
+            setError(
+                "Something went wrong. Please try again."
+            );
         }
     }
 
@@ -43,7 +71,8 @@ function Recommendation() {
                     <h1>Find Your Next Book</h1>
 
                     <p>
-                        Choose a genre, enter an author, or choose both.
+                        Choose a genre, enter an author,
+                        or choose both.
                     </p>
                 </div>
 
@@ -114,11 +143,23 @@ function Recommendation() {
                     </button>
                 </form>
 
-                {recommendation ? (
+                {error && (
+                    <div className="no-recommendation">
+                        {error}
+                    </div>
+                )}
+
+                {hasSearched &&
+                    !recommendation &&
+                    !error && (
+                        <div className="no-recommendation">
+                            No matching books found.
+                        </div>
+                    )}
+
+                {recommendation && (
                     <div className="recommendation-result">
-                        <h2>
-                            We Recommend
-                        </h2>
+                        <h2>We Recommend</h2>
 
                         <h3>
                             {recommendation.title}
@@ -132,10 +173,6 @@ function Recommendation() {
                             Genre: {recommendation.genre}
                         </p>
                     </div>
-                ) : (
-                    <div className="no-recommendation">
-                        No matching books found.
-                    </div>
                 )}
 
             </div>
@@ -144,3 +181,4 @@ function Recommendation() {
 }
 
 export default Recommendation;
+
