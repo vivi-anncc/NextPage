@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>BookTrack</title>
+    <title>NextPage</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -14,8 +13,8 @@
 <body>
 
     <header>
-        <h1>BookTrack</h1>
-        <p>Your personal reading dashboard</p>
+        <h1>NextPage</h1>
+        <p> Dashboard</p>
     </header>
 
     <main>
@@ -23,22 +22,57 @@
         <section class="dashboard">
 
             <div class="card">
-                <h2>Book List</h2>
-                <p>Books I have read</p>
-                <button id="myBooksButton">View My Books</button>
+
+                <h2>My Books</h2>
+
+                <p>Books you've added to your library.</p>
+
+                <form id="bookForm">
+
+                    <label for="bookTitle">Book Title</label>
+                    <input type="text" id="bookTitle" required>
+
+                    <label for="bookAuthor">Author</label>
+                    <input type="text" id="bookAuthor" required>
+
+                    <button type="submit">Add Book</button>
+
+                </form>
+
+                <button id="readBooksButton">View My Books</button>
+
+                <div id="booksContainer"></div>
+
             </div>
 
+            <div class="card">
+
+                <h2>Currently Reading</h2>
+
+                <p>You aren't currently reading anything.</p>
+
+                <button>Start Reading</button>
+
+            </div>
 
             <div class="card">
+
                 <h2>Recommendations</h2>
+
                 <p>Books recommended based on your interests.</p>
+
                 <button>View Recommendations</button>
+
             </div>
 
             <div class="card">
+
                 <h2>Reading Calendar</h2>
+
                 <p>Keep track of what you read each day.</p>
+
                 <button>Open Calendar</button>
+
             </div>
 
         </section>
@@ -50,4 +84,3 @@
 </body>
 
 </html>
-
