@@ -8,7 +8,7 @@ The goal of this project is to learn and practice full-stack web development by 
 * View saved books
 * Edit existing books
 * Delete books
-* Perform CRUD operations
+* View the dates books were started in a calendar 
 * Search for book recommendations
 * Filter recommendations by genre
 * Search recommendations by author
