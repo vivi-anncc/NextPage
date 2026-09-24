@@ -4,7 +4,6 @@ const express = require("express");
 const { Pool } = require("pg");
 
 const app = express();
-
 const PORT = 3000;
 
 const pool = new Pool({
@@ -24,15 +23,12 @@ app.use(express.json());
 app.get("/api/books", async (req, res) => {
     try {
         const result = await pool.query(
-            "SELECT * FROM books"
+            "SELECT * FROM books ORDER BY id DESC"
         );
 
         res.json(result.rows);
     } catch (error) {
-        console.error(
-            "Error getting books:",
-            error
-        );
+        console.error("Error getting books:", error);
 
         res.status(500).json({
             error: "Failed to get books"
@@ -42,22 +38,31 @@ app.get("/api/books", async (req, res) => {
 
 
 app.post("/api/books", async (req, res) => {
-    const { title, author, genre } = req.body;
+    const {
+        title,
+        author,
+        genre,
+        started_reading
+    } = req.body;
 
     try {
         const result = await pool.query(
-            `INSERT INTO books (title, author, genre)
-             VALUES ($1, $2, $3)
+            `INSERT INTO books
+                (title, author, genre, started_reading)
+             VALUES
+                ($1, $2, $3, $4)
              RETURNING *`,
-            [title, author, genre]
+            [
+                title,
+                author,
+                genre,
+                started_reading || null
+            ]
         );
 
         res.status(201).json(result.rows[0]);
     } catch (error) {
-        console.error(
-            "Error adding book:",
-            error
-        );
+        console.error("Error adding book:", error);
 
         res.status(500).json({
             error: "Failed to add book"
@@ -68,17 +73,30 @@ app.post("/api/books", async (req, res) => {
 
 app.put("/api/books/:id", async (req, res) => {
     const { id } = req.params;
-    const { title, author, genre } = req.body;
+
+    const {
+        title,
+        author,
+        genre,
+        started_reading
+    } = req.body;
 
     try {
         const result = await pool.query(
             `UPDATE books
              SET title = $1,
                  author = $2,
-                 genre = $3
-             WHERE id = $4
+                 genre = $3,
+                 started_reading = $4
+             WHERE id = $5
              RETURNING *`,
-            [title, author, genre, id]
+            [
+                title,
+                author,
+                genre,
+                started_reading || null,
+                id
+            ]
         );
 
         if (result.rows.length === 0) {
@@ -89,10 +107,7 @@ app.put("/api/books/:id", async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (error) {
-        console.error(
-            "Error updating book:",
-            error
-        );
+        console.error("Error updating book:", error);
 
         res.status(500).json({
             error: "Failed to update book"
@@ -120,10 +135,7 @@ app.delete("/api/books/:id", async (req, res) => {
 
         res.sendStatus(204);
     } catch (error) {
-        console.error(
-            "Error deleting book:",
-            error
-        );
+        console.error("Error deleting book:", error);
 
         res.status(500).json({
             error: "Failed to delete book"
@@ -137,11 +149,6 @@ app.delete("/api/books/:id", async (req, res) => {
 app.get("/api/recommendations", async (req, res) => {
     const { genre, author } = req.query;
 
-    console.log(
-        "Recommendation request:",
-        { genre, author }
-    );
-
     try {
         let query =
             "SELECT * FROM recommendations WHERE 1=1";
@@ -150,29 +157,19 @@ app.get("/api/recommendations", async (req, res) => {
 
         if (genre) {
             values.push(genre);
-
             query += ` AND genre = $${values.length}`;
         }
 
         if (author) {
             values.push(`%${author}%`);
-
             query += ` AND author ILIKE $${values.length}`;
         }
 
         query += " ORDER BY RANDOM()";
 
-        console.log("SQL:", query);
-        console.log("Values:", values);
-
         const result = await pool.query(
             query,
             values
-        );
-
-        console.log(
-            "Recommendations found:",
-            result.rows.length
         );
 
         res.json(result.rows);
@@ -189,9 +186,10 @@ app.get("/api/recommendations", async (req, res) => {
 });
 
 
+// START SERVER
+
 app.listen(PORT, () => {
     console.log(
         `Server running at http://localhost:${PORT}`
     );
 });
-

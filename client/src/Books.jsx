@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 
 function Books() {
     const [title, setTitle] = useState("");
     const [author, setAuthor] = useState("");
     const [genre, setGenre] = useState("");
+    const [startedReading, setStartedReading] = useState("");
     const [books, setBooks] = useState([]);
     const [editingBookId, setEditingBookId] = useState(null);
 
@@ -21,7 +23,8 @@ function Books() {
                     body: JSON.stringify({
                         title: title,
                         author: author,
-                        genre: genre
+                        genre: genre,
+                        started_reading: startedReading
                     })
                 }
             );
@@ -38,17 +41,21 @@ function Books() {
 
             setEditingBookId(null);
         } else {
-            const response = await fetch("/api/books", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    title: title,
-                    author: author,
-                    genre: genre
-                })
-            });
+            const response = await fetch(
+                "/api/books",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        author: author,
+                        genre: genre,
+                        started_reading: startedReading
+                    })
+                }
+            );
 
             const newBook = await response.json();
 
@@ -61,6 +68,7 @@ function Books() {
         setTitle("");
         setAuthor("");
         setGenre("");
+        setStartedReading("");
     }
 
     async function handleViewBooks() {
@@ -74,16 +82,26 @@ function Books() {
         setTitle(book.title);
         setAuthor(book.author);
         setGenre(book.genre);
+        setStartedReading(
+            book.started_reading
+                ? book.started_reading.substring(0, 10)
+                : ""
+        );
         setEditingBookId(book.id);
     }
 
     async function handleDelete(bookId) {
-        await fetch(`/api/books/${bookId}`, {
-            method: "DELETE"
-        });
+        await fetch(
+            `/api/books/${bookId}`,
+            {
+                method: "DELETE"
+            }
+        );
 
         setBooks((currentBooks) =>
-            currentBooks.filter((book) => book.id !== bookId)
+            currentBooks.filter(
+                (book) => book.id !== bookId
+            )
         );
 
         if (editingBookId === bookId) {
@@ -91,6 +109,7 @@ function Books() {
             setTitle("");
             setAuthor("");
             setGenre("");
+            setStartedReading("");
         }
     }
 
@@ -185,6 +204,21 @@ function Books() {
                         </option>
                     </select>
 
+                    <label htmlFor="startedReading">
+                        Started Reading
+                    </label>
+
+                    <input
+                        type="date"
+                        id="startedReading"
+                        value={startedReading}
+                        onChange={(event) =>
+                            setStartedReading(
+                                event.target.value
+                            )
+                        }
+                    />
+
                     <button type="submit">
                         {editingBookId !== null
                             ? "Update Book"
@@ -199,6 +233,7 @@ function Books() {
                                 setTitle("");
                                 setAuthor("");
                                 setGenre("");
+                                setStartedReading("");
                             }}
                         >
                             Cancel
@@ -228,6 +263,15 @@ function Books() {
                                 Genre: {book.genre}
                             </p>
 
+                            {book.started_reading && (
+                                <p>
+                                    Started reading:{" "}
+                                    {new Date(
+                                        book.started_reading
+                                    ).toLocaleDateString()}
+                                </p>
+                            )}
+
                             <div className="book-actions">
                                 <button
                                     onClick={() =>
@@ -255,3 +299,4 @@ function Books() {
 }
 
 export default Books;
+
